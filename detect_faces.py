@@ -9,13 +9,15 @@ args = vars(ap.parse_args())
 faces=[]
 
 for im in args["images"]:
+    # Read image
     image = cv2.imread(im)
+    # Grayscale image
     gray = cv2.cvtColor(image,cv2.COLOR_BGR2GRAY)
+    # Create facedetector object
     fd = FaceDetector(args["faces"])
-    if image.shape[1]<300:
-        image = imutils.resize(image,width=300)
-    elif image.shape[0]<300:
-        image = imutils.resize(image,height=300)
+    # Optimize image size
+    image = imutils.optimize(image)
+    # If size is 300 use custom parameter values, else use default (have to make it dynamic)
     if image.shape[0]==300 or image.shape[1]==300:
         faceRects = fd.detect(image,scaleFactor=1.04,minNeighbors=3,minSize=(2,2))
     else:

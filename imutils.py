@@ -29,4 +29,16 @@ def rotate(image,degree,center=None,scale=1.0):
     if center is None:
         center = (w/2,h/2)
     return cv2.warpAffine(image,cv2.getRotationMatrix2D(center,degree,scale),(w,h))
-    
+
+def optimize(image,lowerLim=300,upperLim=1500):
+    (h,w) = image.shape[:2]
+    if w<lowerLim:
+        return resize(image,width=lowerLim)
+    elif h<lowerLim:
+        return resize(image,height=lowerLim)
+    elif w>upperLim:
+        return resize(image,width=upperLim)
+    elif h>upperLim:
+        return resize(image,height=upperLim)
+    else:
+        return image
