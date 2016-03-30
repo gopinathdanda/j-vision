@@ -7,6 +7,8 @@ ap.add_argument("-f","--faces",required=True,help="Path to face classfier")
 ap.add_argument("-i","--images",required=True,help="Path to all image(s)",nargs="+")
 args = vars(ap.parse_args())
 faces=[]
+lowerLim = 300
+upperLim = 1500
 
 for im in args["images"]:
     # Read image
@@ -16,9 +18,9 @@ for im in args["images"]:
     # Create facedetector object
     fd = FaceDetector(args["faces"])
     # Optimize image size
-    image = imutils.optimize(image)
+    image = imutils.optimize(image,lowerLim,upperLim)
     # If size is 300 use custom parameter values, else use default (have to make it dynamic)
-    if image.shape[0]==300 or image.shape[1]==300:
+    if image.shape[0]==lowerLim or image.shape[1]==lowerLim:
         faceRects = fd.detect(image,scaleFactor=1.04,minNeighbors=3,minSize=(2,2))
     else:
         faceRects = fd.detect(image)
