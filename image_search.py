@@ -61,7 +61,7 @@ with open('data.txt','r') as f:
     data = f.read()
 
 # Find images in BING result page
-p=re.compile("imgurl:&quot;[a-zA-Z0-9\\:\\/\\.\\+\\-\\=\\_\\?\\@\\%\\(\\)\\[\\]\\{\\}\\,\\!é]+&quot;")
+p=re.compile("imgurl:&quot;[a-zA-Z0-9\\:\\/\\.\\+\\-\\=\\_\\@\\%\\(\\)\\[\\]\\{\\}\\,\\!\\'\\’\\\\é]+[\\?\\&]")
 parsed = p.findall(data)
 num_of_images = len(parsed)
 print "Number of images acquired: "+str(num_of_images)
@@ -74,15 +74,19 @@ except OSError:
 # Progress bar
 toolbar_width = 40
 counter = 0
-sys.stdout.write("[%s]" % (" " * toolbar_width))
+sys.stdout.write("#")
 sys.stdout.flush()
-sys.stdout.write("\b" * (toolbar_width+1)) # return to start of line, after '['
+
+# Calculate retrieve percentage
+errors = 0
 
 # Retrieve every image
 for i,string in enumerate(parsed):
+    if i<39:
+        continue
     d = open(folder+"/list.txt","a")
-    url_path = string[13:-6]
-    p = re.compile("/[a-zA-Z0-9\\:\\.\\+\\-\\=\\_\\@\\%\\(\\)[\\]\\{\\}\\,\\!é]+")
+    url_path = string[13:-1]
+    p = re.compile("/[a-zA-Z0-9\\:\\.\\+\\-\\=\\_\\@\\%\\(\\)\\[\\]\\{\\}\\,\\!\\'\\’\\\\é]+")
     ftype = p.findall(url_path)
     #print ftype
     fname = folder+"/"+str(i)+ftype[-1][1:]
@@ -90,6 +94,7 @@ for i,string in enumerate(parsed):
         req = urllib2.Request(url_path, headers=hdr)
         page = urllib2.urlopen(req)
     except urllib2.URLError as err:
+        errors = errors+1
         if type(err.reason) is str:
             s = err.reason
         else:
@@ -102,6 +107,7 @@ for i,string in enumerate(parsed):
         d.write(error+"\n")
         continue
     except urllib2.HTTPError as err:
+        errors = errors+1
         error = err.reason.capitalize()+": "+url_path
         #print error
         d.write(error+"\n")
@@ -121,6 +127,16 @@ for i,string in enumerate(parsed):
     if i*toolbar_width/num_of_images>counter:
         counter=counter+1
         sys.stdout.write("#")
-        sys.stdout.flush()
+    percent = ((i+1)*100/float(num_of_images))
+    sys.stdout.write(" %0.2f%%" % percent)
+    sys.stdout.flush()
+    if percent<10:
+        sys.stdout.write("\b"*6)
+    else:
+        sys.stdout.write("\b"*7)
+sys.stdout.write("#")
+sys.stdout.write("  100%")
+sys.stdout.flush()
 sys.stdout.write("\n")
+print "Percentage of images retrieved: %0.2f%%" % (((num_of_images-errors)*100)/float(num_of_images))
 d.close()
