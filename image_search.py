@@ -1,9 +1,12 @@
+#!/usr/bin/python
+# -*- coding: UTF-8 -*-
+
 # ------ BING Image Search ---------
 # Searches and stores image results from Bing.
 #
 # Scheme: Apr 2016
 
-import urllib,urllib2,re,os,argparse
+import urllib,urllib2,re,os,argparse,sys
 
 # Camelcase function for directory naming
 def camelCase(string):
@@ -41,12 +44,15 @@ full_url = url+"?"+url_values
 with open('data.txt','w') as f:
     try:
         response = urllib2.urlopen(full_url)
-    except urllib2.URLError, err:
-        (e,s) = err.reason
-        if s == "nodename nor servname provided, or not known":
-            print "CONNECTION ISSUE"
+    except urllib2.URLError as err:
+        if type(err.reason) is str:
+            s = err.reason
         else:
-            print s.capitalize()
+            (e,s) = err.reason
+        if s == "nodename nor servname provided, or not known":
+            error = "CONNECTION ISSUE"
+        else:
+            error = s.capitalize()
         exit()
     data = response.read()
     f.write(data)
@@ -55,44 +61,66 @@ with open('data.txt','r') as f:
     data = f.read()
 
 # Find images in BING result page
-p = re.compile("imgurl:&quot;[a-zA-Z0-9\\:\\/\\+\\-\\=\\_\\@\\%\\.\\?\\&]+&quot;")
+p=re.compile("imgurl:&quot;[a-zA-Z0-9\\:\\/\\.\\+\\-\\=\\_\\?\\@\\%\\(\\)\\[\\]\\{\\}\\,\\!é]+&quot;")
 parsed = p.findall(data)
-print "Number of images acquired: "+str(len(parsed))
+num_of_images = len(parsed)
+print "Number of images acquired: "+str(num_of_images)
 folder = "images/"+camelCase(arg["q"])
 try:
     os.mkdir(folder)
 except OSError:
     print "Directory already present! Continuing..."
 
+# Progress bar
+toolbar_width = 40
+counter = 0
+sys.stdout.write("[%s]" % (" " * toolbar_width))
+sys.stdout.flush()
+sys.stdout.write("\b" * (toolbar_width+1)) # return to start of line, after '['
+
 # Retrieve every image
 for i,string in enumerate(parsed):
     d = open(folder+"/list.txt","a")
     url_path = string[13:-6]
-    p = re.compile("/[a-zA-Z0-9\\:\\-\\.\\_\\+\\@\\%]+")
+    p = re.compile("/[a-zA-Z0-9\\:\\.\\+\\-\\=\\_\\@\\%\\(\\)[\\]\\{\\}\\,\\!é]+")
     ftype = p.findall(url_path)
+    #print ftype
     fname = folder+"/"+str(i)+ftype[-1][1:]
     try:
         req = urllib2.Request(url_path, headers=hdr)
         page = urllib2.urlopen(req)
     except urllib2.URLError as err:
-        (e,s) = err.reason
+        if type(err.reason) is str:
+            s = err.reason
+        else:
+            (e,s) = err.reason
         if s == "nodename nor servname provided, or not known":
             error = "CONNECTION ISSUE: "+url_path
         else:
             error = s.capitalize()+": "+url_path
-        print error
+        #print error
         d.write(error+"\n")
         continue
     except urllib2.HTTPError as err:
         error = err.reason.capitalize()+": "+url_path
-        print error
+        #print error
         d.write(error+"\n")
         continue
     content = page.read()
     f = open(fname,"wb")
     f.write(content)
     f.close()
-    success = "Received: "+url_path
-    print success
+    filesize = (os.stat(fname).st_size)/float(1024)  #file size in KB
+    if filesize < 3:
+        os.remove(fname)
+        success = "File doesn't exist or too small: "+url_path
+    else:
+        success = "Received: "+url_path
+    #print success
     d.write(success+"\n")
+    if i*toolbar_width/num_of_images>counter:
+        counter=counter+1
+        sys.stdout.write("#")
+        sys.stdout.flush()
+sys.stdout.write("\n")
 d.close()
