@@ -15,7 +15,7 @@ def camelCase(string):
 
 # Get image search query
 ap = argparse.ArgumentParser()
-ap.add_argument("-q","--query",required=True,help="Query string",nargs="+")
+ap.add_argument("-q","--query",required=True,help="Query string")
 args=vars(ap.parse_args())
 
 # Image search URL
@@ -27,13 +27,21 @@ hdr = {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.11 (KHTML,
        'Accept-Language': 'en-US,en;q=0.8',
        'Connection': 'keep-alive'}
 arg = {}
-arg["q"] = args["query"][0]
+arg["q"] = args["query"]
 url_values = urllib.urlencode(arg)
 full_url = url+"?"+url_values
 
 # Save HTML response to a file and parse later (for testing & poor connection)
 with open('data.txt','w') as f:
-    response = urllib2.urlopen(full_url)
+    try:
+        response = urllib2.urlopen(full_url)
+    except urllib2.URLError, err:
+        (e,s) = err.reason
+        if s=="nodename nor servname provided, or not known":
+            print "CONNECTION ISSUE"
+        else:
+            print s.capitalize()
+        exit()
     data = response.read()
     f.write(data)
 data = []
@@ -56,18 +64,22 @@ for i,string in enumerate(parsed):
     p = re.compile("/[a-zA-Z0-9\\-\\.\\:\\_\\+]+")
     ftype = p.findall(url_path)
     fname = folder+"/"+str(i)+ftype[-1][1:]
-    req = urllib2.Request(url_path, headers=hdr)
+    try:
+        req = urllib2.Request(url_path, headers=hdr)
+    except urllib2.URLError, err:
+        (e,s) = err.reason
+        if s=="nodename nor servname provided, or not known":
+            print "CONNECTION ISSUE"
+        else:
+            print s.capitalize()
+        continue
     try:
         page = urllib2.urlopen(req)
     except urllib2.HTTPError, err:
-        if err == "404":
-            print "NOT FOUND! URL: "+url_path
-            continue
-        else:
-            print err+" URL: "+url_path
-            continue
-    print url_path
+        print err.reason.capitalize()+": "+url_path
+        continue
     content = page.read()
     f = open(fname,"wb")
     f.write(content)
     f.close()
+    print "Received: "+url_path
