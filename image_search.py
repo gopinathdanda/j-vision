@@ -30,7 +30,10 @@ arg = {}
 arg["q"] = args["query"]
 arg["async"] = "content"
 arg["first"] = 0
-arg["count"] = args["num"]
+if args["num"] is None:
+    arg["count"] = 100
+else:
+    arg["count"] = args["num"]
 url_values = urllib.urlencode(arg)
 full_url = url+"?"+url_values
 
@@ -63,26 +66,33 @@ except OSError:
 
 # Retrieve every image
 for i,string in enumerate(parsed):
+    d = open(folder+"/list.txt","a")
     url_path = string[13:-6]
     p = re.compile("/[a-zA-Z0-9\\:\\-\\.\\_\\+\\@\\%]+")
     ftype = p.findall(url_path)
     fname = folder+"/"+str(i)+ftype[-1][1:]
     try:
         req = urllib2.Request(url_path, headers=hdr)
-    except urllib2.URLError, err:
+        page = urllib2.urlopen(req)
+    except urllib2.URLError as err:
         (e,s) = err.reason
         if s == "nodename nor servname provided, or not known":
-            print "CONNECTION ISSUE"
+            error = "CONNECTION ISSUE: "+url_path
         else:
-            print s.capitalize()
+            error = s.capitalize()+": "+url_path
+        print error
+        d.write(error+"\n")
         continue
-    try:
-        page = urllib2.urlopen(req)
-    except urllib2.HTTPError, err:
-        print err.reason.capitalize()+": "+url_path
+    except urllib2.HTTPError as err:
+        error = err.reason.capitalize()+": "+url_path
+        print error
+        d.write(error+"\n")
         continue
     content = page.read()
     f = open(fname,"wb")
     f.write(content)
     f.close()
-    print "Received: "+url_path
+    success = "Received: "+url_path
+    print success
+    d.write(success+"\n")
+d.close()
