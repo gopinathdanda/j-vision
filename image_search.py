@@ -1,6 +1,5 @@
 # ------ BING Image Search ---------
-# Searches and stores the first ~20 image results
-# from Bing.
+# Searches and stores image results from Bing.
 #
 # Scheme: Apr 2016
 
@@ -16,10 +15,11 @@ def camelCase(string):
 # Get image search query
 ap = argparse.ArgumentParser()
 ap.add_argument("-q","--query",required=True,help="Query string")
-args=vars(ap.parse_args())
+ap.add_argument("-n","--num",help="Number of images required (optional, default = 100)")
+args = vars(ap.parse_args())
 
 # Image search URL
-url = "http://www.bing.com/images/search"
+url = "https://www.bing.com/images/async"
 hdr = {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.64 Safari/537.11',
        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
        'Accept-Charset': 'ISO-8859-1,utf-8;q=0.7,*;q=0.3',
@@ -28,6 +28,9 @@ hdr = {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.11 (KHTML,
        'Connection': 'keep-alive'}
 arg = {}
 arg["q"] = args["query"]
+arg["async"] = "content"
+arg["first"] = 0
+arg["count"] = args["num"]
 url_values = urllib.urlencode(arg)
 full_url = url+"?"+url_values
 
@@ -37,7 +40,7 @@ with open('data.txt','w') as f:
         response = urllib2.urlopen(full_url)
     except urllib2.URLError, err:
         (e,s) = err.reason
-        if s=="nodename nor servname provided, or not known":
+        if s == "nodename nor servname provided, or not known":
             print "CONNECTION ISSUE"
         else:
             print s.capitalize()
@@ -49,9 +52,9 @@ with open('data.txt','r') as f:
     data = f.read()
 
 # Find images in BING result page
-p = re.compile("href=\"[a-zA-Z0-9\\-\\.\\/\\:\\_\\+]+\" class=\"thumb\"")
+p = re.compile("imgurl:&quot;[a-zA-Z0-9\\:\\/\\+\\-\\=\\_\\@\\%\\.\\?\\&]+&quot;")
 parsed = p.findall(data)
-print "Number of image acquired: "+str(len(parsed))
+print "Number of images acquired: "+str(len(parsed))
 folder = "images/"+camelCase(arg["q"])
 try:
     os.mkdir(folder)
@@ -60,15 +63,15 @@ except OSError:
 
 # Retrieve every image
 for i,string in enumerate(parsed):
-    url_path = string[6:-15]
-    p = re.compile("/[a-zA-Z0-9\\-\\.\\:\\_\\+]+")
+    url_path = string[13:-6]
+    p = re.compile("/[a-zA-Z0-9\\:\\-\\.\\_\\+\\@\\%]+")
     ftype = p.findall(url_path)
     fname = folder+"/"+str(i)+ftype[-1][1:]
     try:
         req = urllib2.Request(url_path, headers=hdr)
     except urllib2.URLError, err:
         (e,s) = err.reason
-        if s=="nodename nor servname provided, or not known":
+        if s == "nodename nor servname provided, or not known":
             print "CONNECTION ISSUE"
         else:
             print s.capitalize()
