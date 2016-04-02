@@ -31,3 +31,5 @@ The images will be saved in *images/BradPitt*. The image URLs with the correspon
 ```shell
 python detect_faces.py -f cascades/haarcascade_frontalface_alt.xml -i images/BradPitt/*
 ```
+
+The faces are saved in the folder *faces/BradPitt*.
