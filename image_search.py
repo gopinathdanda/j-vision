@@ -20,7 +20,7 @@ ap = argparse.ArgumentParser()
 ap.add_argument("-q","--query",required=True,help="Query string")
 ap.add_argument("-n","--num",type=int,help="Number of images required (optional, int, default = 100)")
 ap.add_argument("-d","--downloadData",help="Request image query or use downloaded data (optional, yes/no, default = yes)")
-ap.add_argument("-c","--continueFrom",type=int,help="Continue download from index, should be less than total number of images (optional, int, deafult = 1)")
+ap.add_argument("-c","--continueFrom",type=int,help="Continue download from index, should be less than total number of images (optional, int, default = 1)")
 args = vars(ap.parse_args())
 
 # Image search URL
