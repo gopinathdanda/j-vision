@@ -18,7 +18,9 @@ def camelCase(string):
 # Get image search query
 ap = argparse.ArgumentParser()
 ap.add_argument("-q","--query",required=True,help="Query string")
-ap.add_argument("-n","--num",help="Number of images required (optional, default = 100)")
+ap.add_argument("-n","--num",type=int,help="Number of images required (optional, int, default = 100)")
+ap.add_argument("-d","--downloadData",help="Request image query or use downloaded data (optional, yes/no, default = yes)")
+ap.add_argument("-c","--continueFrom",type=int,help="Continue download from index, should be less than total number of images (optional, int, deafult = 1)")
 args = vars(ap.parse_args())
 
 # Image search URL
@@ -41,21 +43,25 @@ url_values = urllib.urlencode(arg)
 full_url = url+"?"+url_values
 
 # Save HTML response to a file and parse later (for testing & poor connection)
-with open('data.txt','w') as f:
-    try:
-        response = urllib2.urlopen(full_url)
-    except urllib2.URLError as err:
-        if type(err.reason) is str:
-            s = err.reason
-        else:
-            (e,s) = err.reason
-        if s == "nodename nor servname provided, or not known":
-            error = "CONNECTION ISSUE"
-        else:
-            error = s.capitalize()
-        exit()
-    data = response.read()
-    f.write(data)
+if args["downloadData"] != "no":
+    with open('data.txt','w') as f:
+        try:
+            response = urllib2.urlopen(full_url)
+        except urllib2.URLError as err:
+            if type(err.reason) is str:
+                s = err.reason
+            else:
+                (e,s) = err.reason
+            if s == "nodename nor servname provided, or not known":
+                error = "Cannot connect"
+            else:
+                error = s.capitalize()
+            print error
+            exit()
+        data = response.read()
+        f.write(data)
+else:
+    print "Skipping image query download and using already downloaded data."
 data = []
 with open('data.txt','r') as f:
     data = f.read()
@@ -82,14 +88,14 @@ errors = 0
 
 # Retrieve every image
 for i,string in enumerate(parsed):
-    if i<39:
+    if args["continueFrom"] is not None and i<args["continueFrom"]:
         continue
     d = open(folder+"/list.txt","a")
     url_path = string[13:-1]
     p = re.compile("/[a-zA-Z0-9\\:\\.\\+\\-\\=\\_\\@\\%\\(\\)\\[\\]\\{\\}\\,\\!\\'\\’\\\\é]+")
     ftype = p.findall(url_path)
     #print ftype
-    fname = folder+"/"+str(i)+ftype[-1][1:]
+    fname = folder+"/"+str(i)+"_"+ftype[-1][1:]
     try:
         req = urllib2.Request(url_path, headers=hdr)
         page = urllib2.urlopen(req)
@@ -100,7 +106,7 @@ for i,string in enumerate(parsed):
         else:
             (e,s) = err.reason
         if s == "nodename nor servname provided, or not known":
-            error = "CONNECTION ISSUE: "+url_path
+            error = "Cannot connect: "+url_path
         else:
             error = s.capitalize()+": "+url_path
         #print error
@@ -120,6 +126,7 @@ for i,string in enumerate(parsed):
     if filesize < 3:
         os.remove(fname)
         success = "File doesn't exist or too small: "+url_path
+        errors = errors+1
     else:
         success = "Received: "+url_path
     #print success
