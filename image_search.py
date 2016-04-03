@@ -67,7 +67,7 @@ with open('data.txt','r') as f:
     data = f.read()
 
 # Find images in BING result page
-p=re.compile("imgurl:&quot;[a-zA-Z0-9\\:\\/\\.\\+\\-\\=\\_\\@\\%\\(\\)\\[\\]\\{\\}\\,\\!\\'\\’\\\\é]+[\\?\\&]")
+p=re.compile("imgurl:&quot;[a-zA-Z0-9\\:\\/\\.\\+\\-\\=\\_\\@\\%\\(\\)\\[\\]\\{\\}\\,\\!\\'\\’\\\\é]+[\\?\\&\\#]")
 parsed = p.findall(data)
 num_of_images = len(parsed)
 print "Number of images acquired: "+str(num_of_images)
