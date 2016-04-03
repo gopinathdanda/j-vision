@@ -67,7 +67,7 @@ with open('data.txt','r') as f:
     data = f.read()
 
 # Find images in BING result page
-p=re.compile("imgurl:&quot;[a-zA-Z0-9\\:\\/\\.\\+\\-\\=\\_\\@\\%\\(\\)\\[\\]\\{\\}\\,\\!\\'\\’\\\\é]+[\\?\\&\\#]")
+p=re.compile("imgurl:&quot;[a-zA-Z0-9\\:\\/\\.\\+\\-\\=\\_\\@\\%\\(\\)\\[\\]\\{\\}\\,\\!\\'\\’\\\\\\~é]+[\\?\\&\\#]")
 parsed = p.findall(data)
 num_of_images = len(parsed)
 print "Number of images acquired: "+str(num_of_images)
@@ -92,7 +92,7 @@ for i,string in enumerate(parsed):
         continue
     d = open(folder+"/list.txt","a")
     url_path = string[13:-1]
-    p = re.compile("/[a-zA-Z0-9\\:\\.\\+\\-\\=\\_\\@\\%\\(\\)\\[\\]\\{\\}\\,\\!\\'\\’\\\\é]+")
+    p = re.compile("/[a-zA-Z0-9\\:\\.\\+\\-\\=\\_\\@\\%\\(\\)\\[\\]\\{\\}\\,\\!\\'\\’\\\\\\~é]+")
     ftype = p.findall(url_path)
     #print ftype
     fname = folder+"/"+str(i)+"_"+ftype[-1][1:]
