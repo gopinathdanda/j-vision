@@ -75,7 +75,7 @@ folder = "images/"+camelCase(arg["q"])
 try:
     os.mkdir(folder)
 except OSError:
-    print "Directory already present! Continuing..."
+    print "Directory already present. Continuing..."
 
 # Progress bar
 toolbar_width = 40
@@ -141,7 +141,7 @@ for i,string in enumerate(parsed):
         sys.stdout.write("\b"*6)
     else:
         sys.stdout.write("\b"*7)
-sys.stdout.write("#")
+sys.stdout.write("\b#")
 sys.stdout.write("  100%")
 sys.stdout.flush()
 sys.stdout.write("\n")
