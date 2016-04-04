@@ -3,7 +3,7 @@ import numpy as np
 from facedetector import FaceDetector
 
 ap = argparse.ArgumentParser()
-ap.add_argument("-f","--faces",required=True,help="Path to face classfier")
+ap.add_argument("-f","--faces",help="Path to face classfier (optional)")
 ap.add_argument("-i","--images",required=True,help="Path to all image(s)",nargs="+")
 args = vars(ap.parse_args())
 faces=[]
@@ -17,7 +17,10 @@ for im in args["images"]:
         # Grayscale image
         gray = cv2.cvtColor(image,cv2.COLOR_BGR2GRAY)
         # Create facedetector object
-        fd = FaceDetector(args["faces"])
+        if args["faces"] is None:
+            fd = FaceDetector("cascades/haarcascade_frontalface_alt.xml")
+        else:
+            fd = FaceDetector(args["faces"])
         # Optimize image size
         image = imutils.optimize(image,lowerLim,upperLim)
         # If size is 300 use custom parameter values, else use default (have to make it dynamic)
@@ -28,7 +31,7 @@ for im in args["images"]:
         for (i,rect) in enumerate(faceRects):
             (x,y,w,h) = rect
             #cv2.rectangle(image,(x,y),(x+w,y+h),(0,0,255),1)
-            face = image[y:y+h,x:x+w]
+            face = imutils.resize(image[y:y+h,x:x+w],width=100)
             faces.append(face)
             t=time.time()
             folder = "faces/"+os.path.dirname(im)[7:]
