@@ -7,10 +7,17 @@ A project (for educational purposes) on computer vision for face detection.
 Save images to a folder called *images* and run:
 
 ```shell
+python detect_faces.py -i images/*
+```
+The faces are saved in the folder *faces*.
+
+####Optional arguments
+
+To select a specific faceclassifier, use:
+
+```shell
 python detect_faces.py -f cascades/haarcascade_frontalface_alt.xml -i images/*
 ```
-
-The faces are saved in the folder *faces*.
 
 ###To save images from web search:
 
