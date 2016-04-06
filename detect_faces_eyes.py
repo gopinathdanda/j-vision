@@ -1,4 +1,4 @@
-import argparse, cv2, time, imutils, os, cmath, math
+import argparse, cv2, time, imutils, os, cmath, math, sys
 import numpy as np
 from eyetracker import EyeTracker
 
@@ -9,9 +9,30 @@ ap.add_argument("-i","--images",required=True,help="Path to all image(s)",nargs=
 args = vars(ap.parse_args())
 lowerLim = 300
 upperLim = 1500
-faces=[]
+allLabels = []
+label = -1
+currName = ""
+faces = []
+facesPath = []
 
-for im in args["images"]:
+# Progress bar
+toolbar_width = 40
+counter = 0
+sys.stdout.write("#")
+sys.stdout.flush()
+num_of_images = len(args["images"])
+
+for i,im in enumerate(args["images"]):
+    if i*toolbar_width/num_of_images>counter:
+        counter=counter+1
+        sys.stdout.write("#")
+    percent = ((i+1)*100/float(num_of_images))
+    sys.stdout.write(" %0.2f%%" % percent)
+    sys.stdout.flush()
+    if percent<10:
+        sys.stdout.write("\b"*6)
+    else:
+        sys.stdout.write("\b"*7)
     if any(x == os.path.splitext(im)[1][1:] for x in ('jpg','jpeg','gif','png','bmp')):
         # Read image
         image = cv2.imread(im)
@@ -62,10 +83,25 @@ for im in args["images"]:
                 os.mkdir(folder)
             except OSError:
                 pass
-            cv2.imwrite(folder+"/"+str(t)+".jpg",face)
+            path = folder+"/"+str(t)+".jpg"
+            if currName != imageName:
+                label += 1
+                currName = imageName
+                allLabels.append(str(label)+";"+currName)
+            facesPath.append(path+";"+str(label))
+            cv2.imwrite(path,face)
             time.sleep(0.025)
             cv2.imshow("Face Selected",face)
             cv2.waitKey(1000)
         #cv2.imshow("Original",gray)
         #cv2.waitKey(1000)
+#print allLabels[:]
+sys.stdout.write("\n")
+fileFolder = "faces/"
+with open(fileFolder+"labels.txt","w") as f:
+    for l in allLabels:
+        f.write(l+"\n")
+with open(fileFolder+"imageFiles.txt","w") as f:
+    for l in facesPath:
+        f.write(l+"\n")
 print "Total number of faces found: %d" % len(faces)
