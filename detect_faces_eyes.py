@@ -79,7 +79,7 @@ for i,im in enumerate(args["images"]):
                 currFaces = 0
                 currName = imageName
                 allLabels.append(str(label)+";"+currName)
-            currFaces = currFaces+1
+            currFaces += 1
             facesPath.append(path+";"+str(label))
             cv2.imwrite(path,face)
             time.sleep(0.025)

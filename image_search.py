@@ -12,7 +12,7 @@ import urllib,urllib2,re,os,argparse,sys
 def camelCase(string):
     k = ""
     for s in string.split():
-        k = k+s.capitalize()
+        k += s.capitalize()
     return k
 
 # Get image search query
@@ -100,7 +100,7 @@ for i,string in enumerate(parsed):
         req = urllib2.Request(url_path, headers=hdr)
         page = urllib2.urlopen(req)
     except urllib2.URLError as err:
-        errors = errors+1
+        errors += 1
         if type(err.reason) is str:
             s = err.reason
         else:
@@ -113,7 +113,7 @@ for i,string in enumerate(parsed):
         d.write(error+"\n")
         continue
     except urllib2.HTTPError as err:
-        errors = errors+1
+        errors += 1
         error = err.reason.capitalize()+": "+url_path
         #print error
         d.write(error+"\n")
@@ -126,13 +126,13 @@ for i,string in enumerate(parsed):
     if filesize < 3:
         os.remove(fname)
         success = "File doesn't exist or too small: "+url_path
-        errors = errors+1
+        errors += 1
     else:
         success = "Received: "+url_path
     #print success
     d.write(success+"\n")
     if i*toolbar_width/num_of_images>counter:
-        counter=counter+1
+        counter += 1
         sys.stdout.write("#")
     percent = ((i+1)*100/float(num_of_images))
     sys.stdout.write(" %0.2f%%" % percent)
