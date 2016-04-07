@@ -1,4 +1,4 @@
-import argparse, cv2, time, imutils, os, cmath, math, sys
+import argparse, cv2, time, imutils, os, math, sys
 import numpy as np
 from eyetracker import EyeTracker
 
@@ -12,30 +12,17 @@ upperLim = 1500
 allLabels = []
 label = -1
 currName = ""
-faces = []
+#faces = []
 facesPath = []
+currFaces = 0
 
-# Progress bar
-toolbar_width = 40
-counter = 0
-sys.stdout.write("#")
-sys.stdout.flush()
 num_of_images = len(args["images"])
 
 for i,im in enumerate(args["images"]):
-    if i*toolbar_width/num_of_images>counter:
-        counter=counter+1
-        sys.stdout.write("#")
-    percent = ((i+1)*100/float(num_of_images))
-    sys.stdout.write(" %0.2f%%" % percent)
-    sys.stdout.flush()
-    if percent<10:
-        sys.stdout.write("\b"*6)
-    else:
-        sys.stdout.write("\b"*7)
-    if any(x == os.path.splitext(im)[1][1:] for x in ('jpg','jpeg','gif','png','bmp')):
+    if any(x == os.path.splitext(im)[1][1:] for x in ('jpg','jpeg','png','bmp')):
         # Read image
         image = cv2.imread(im)
+        #imagecopy = image.copy()
         imageName = os.path.dirname(im)[7:]
         # Grayscale image
         gray = cv2.cvtColor(image,cv2.COLOR_BGR2GRAY)
@@ -55,12 +42,12 @@ for i,im in enumerate(args["images"]):
         for (i,rect) in enumerate(allRects):
             if i%3==0:
                 (Fx,Fy,Fw,Fh) = rect
-                #cv2.rectangle(image,(x,y),(x+w,y+h),(0,0,255),1)
+                #cv2.rectangle(imagecopy,(Fx,Fy),(Fx+Fw,Fy+Fh),(0,0,255),1)
                 face = image[Fy:Fy+Fh,Fx:Fx+Fw]
                 e2c=e1c=(0,0)
-                #print "Face"+str(i/3)+": ("+str(rect[0])+","+str(rect[1])+")"
+                #cv2.imshow("Image",imagecopy)
                 cv2.imshow("Face"+str(i/3),imutils.resize(face,width=100))
-                cv2.waitKey(1000)
+                cv2.waitKey(1)
                 continue
             if i%2==0 and i%3!=0:
                 #cv2.rectangle(face,(rect[0],rect[1]),(rect[2],rect[3]),(0,0,255),2)
@@ -71,12 +58,13 @@ for i,im in enumerate(args["images"]):
                 e1c=((rect[0]+rect[2])/2,(rect[1]+rect[3])/2)
                 #print "Green eye: ("+str(rect[0])+","+str(rect[1])+")"
                 continue
-            angle = abs(cmath.atan((e1c[1]-e2c[1])/float(e1c[0]-e2c[0])))*180/math.pi
+            angle = abs(math.atan((e1c[1]-e2c[1])/float(e1c[0]-e2c[0])))*180/math.pi
             # If both eyes not present or angle is more than 10, ignore face
             if e2c==(0,0) or e2c==(0,0) or angle>10:
                 continue
+            distEyes = math.sqrt(math.pow((e2c[0]-e1c[0]),2)+math.pow((e2c[1]-e1c[1]),2))*100/face.shape[1]
             face = imutils.resize(face,width=100)
-            faces.append(face)
+            #faces.append(face)
             t=time.time()
             folder = "faces/"+imageName
             try:
@@ -86,17 +74,20 @@ for i,im in enumerate(args["images"]):
             path = folder+"/"+str(t)+".jpg"
             if currName != imageName:
                 label += 1
+                if currFaces != 0:
+                    print currName+": "+str(currFaces)
+                currFaces = 0
                 currName = imageName
                 allLabels.append(str(label)+";"+currName)
+            currFaces = currFaces+1
             facesPath.append(path+";"+str(label))
             cv2.imwrite(path,face)
             time.sleep(0.025)
             cv2.imshow("Face Selected",face)
-            cv2.waitKey(1000)
+            cv2.waitKey(1)
         #cv2.imshow("Original",gray)
         #cv2.waitKey(1000)
 #print allLabels[:]
-sys.stdout.write("\n")
 fileFolder = "faces/"
 with open(fileFolder+"labels.txt","w") as f:
     for l in allLabels:
@@ -104,4 +95,4 @@ with open(fileFolder+"labels.txt","w") as f:
 with open(fileFolder+"imageFiles.txt","w") as f:
     for l in facesPath:
         f.write(l+"\n")
-print "Total number of faces found: %d" % len(faces)
+#print "Total number of faces found: %d" % len(faces)
