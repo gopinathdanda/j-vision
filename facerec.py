@@ -23,65 +23,81 @@ def randomize(a):
         b.append(element)
     return b
 
-ap = argparse.ArgumentParser()
-ap.add_argument("-i","--imagesList",help="Path to image list (optional)")
-ap.add_argument("-f","--facesList",help="Path to faces list (optional)")
-ap.add_argument("-t","--trainingPercent",type=int,help="Percentage of data used for training (optional)")
-args = vars(ap.parse_args())
-if args["imagesList"] is None:
-    args["imagesList"] = "faces/imageFiles.txt"
-if args["facesList"] is None:
-    args["facesList"] = "faces/labels.txt"
-if args["trainingPercent"] is None:
-    args["trainingPercent"] = 70
+def trainAndTest(train=80,imagesList="faces/imageFiles.txt",facesList="faces/labels.txt"):
+    images = imagesList
+    labels = facesList
 
-images = args["imagesList"]
-labels = args["facesList"]
+    labels_list = []
+    main_list = []
+    X_train,Y_train = [],[]
+    X_test,Y_test = [],[]
+    X_test_im = []
 
-labels_list = []
-main_list = []
-X_train,Y_train = [],[]
-X_test,Y_test = [],[]
-X_test_im = []
+    for line in open(labels,'r'):
+        v = line.rstrip('\n').split(';')
+        labels_list.append(v[1])
 
-for line in open(labels,'r'):
-    v = line.rstrip('\n').split(';')
-    labels_list.append(v[1])
+    for line in open(images,'r'):
+        main_list.append(line.rstrip('\n'))
+    random_list = randomize(main_list)
+    index = int(train*len(random_list)/100)-1
 
-for line in open(images,'r'):
-    main_list.append(line.rstrip('\n'))
-random_list = randomize(main_list)
-index = int(args["trainingPercent"]*len(random_list)/100)-1
+    for k,v in enumerate(random_list):
+        (i,l) = v.split(';')
+        im = cv2.imread(i,cv2.IMREAD_GRAYSCALE)
+        im_resized = imutils.resize(im,width=100,height=100)
+        if k <= index:
+            X_train.append(np.asarray(im_resized, dtype=np.uint8))
+            Y_train.append(l)
+        else:
+            X_test_im.append(i)
+            X_test.append(np.asarray(im_resized, dtype=np.uint8))
+            Y_test.append(l)
 
-for k,v in enumerate(random_list):
-    (i,l) = v.split(';')
-    im = cv2.imread(i,cv2.IMREAD_GRAYSCALE)
-    im_resized = imutils.resize(im,width=100,height=100)
-    if k <= index:
-        X_train.append(np.asarray(im_resized, dtype=np.uint8))
-        Y_train.append(l)
-    else:
-        X_test_im.append(i)
-        X_test.append(np.asarray(im_resized, dtype=np.uint8))
-        Y_test.append(l)
+    Y_train = np.asarray(Y_train, dtype=np.int32)
+    Y_test = np.asarray(Y_test, dtype=np.int32)
+    model = cv2.createLBPHFaceRecognizer()
+    model.train(np.asarray(X_train),np.asarray(Y_train))
 
-Y_train = np.asarray(Y_train, dtype=np.int32)
-Y_test = np.asarray(Y_test, dtype=np.int32)
-model = cv2.createFisherFaceRecognizer()
-model.train(np.asarray(X_train),np.asarray(Y_train))
+    #test = random.randint(0,len(Y_test))
+    #test_im = X_test[test]
+    #test_image = cv2.imread(X_test_im[test])
+    #print "Actual: %s" % (labels_list[Y_test[test]])
 
-test = random.randint(0,len(Y_test))
-test_im = X_test[test]
-test_image = cv2.imread(X_test_im[test])
-cv2.imshow("kj",test_image)
-cv2.waitKey(0)
-print "Actual: %s" % (labels_list[Y_test[test]])
-[p_l, p_c] = model.predict(np.asarray(test_im))
-print "Predicted value: %s (confidence level = %0.2f)" % (labels_list[int(p_l)], p_c)
-mean = model.getMat("mean")
-eigenvectors = model.getMat("eigenvectors")
-mean_norm = normalize(mean, 0, 255, dtype=np.uint8)
-mean_resized = mean_norm.reshape(test_im.shape)
-cv2.imshow("mean", mean_resized)
-cv2.waitKey(0)
+    correct = 0
+    total_test = len(Y_test)
+
+    for i,test_im in enumerate(X_test):
+        [p_l, p_c] = model.predict(np.asarray(test_im))
+        a_l = Y_test[i]
+        if a_l == p_l:
+            correct += 1
+        #print "Predicted value: %s (confidence level = %0.2f)" % (labels_list[int(p_l)], p_c)
+
+    return (correct/float(total_test))
+
+acc = 0
+tot = 25
+trainList = [50,60]
+accList = []
+
+for v in trainList:
+    for count in range(0,tot):
+        accuracy = trainAndTest(train=v)
+        acc += accuracy
+        avg = acc/float(count+1)
+        #print "%d:: %d samples have %0.2f accuracy" % (count,v,accuracy)
+        print "%d:: avg: %0.2f" %(count,avg)
+    acc = acc/float(tot)
+    accList.append(acc)
+    acc = 0
+print "---------------------------"
+for i,v in enumerate(trainList):
+    print "%d samples: %0.2f" % (v,accList[i])
+#mean = model.getMat("mean")
+#eigenvectors = model.getMat("eigenvectors")
+#mean_norm = normalize(mean, 0, 255, dtype=np.uint8)
+#mean_resized = mean_norm.reshape(test_im.shape)
+#cv2.imshow("Actual",test_image)
+#cv2.waitKey(0)
 #print model.getParams()
