@@ -67,7 +67,7 @@ with open('data.txt','r') as f:
     data = f.read()
 
 # Find images in BING result page
-p=re.compile("imgurl:&quot;[a-zA-Z0-9\\:\\/\\.\\+\\-\\=\\_\\@\\%\\(\\)\\[\\]\\{\\}\\,\\!\\'\\’\\\\\\~é]+[\\?\\&\\#]")
+p=re.compile("murl&quot;:&quot;[a-zA-Z0-9\\:\\/\\.\\+\\-\\=\\_\\@\\%\\(\\)\\[\\]\\{\\}\\,\\!\\'\\’\\\\~é\\?\\&\\#\\;]+&quot;,&quot;md5")
 parsed = p.findall(data)
 num_of_images = len(parsed)
 print "Number of images acquired: "+str(num_of_images)
@@ -91,11 +91,14 @@ for i,string in enumerate(parsed):
     if args["continueFrom"] is not None and i<args["continueFrom"]:
         continue
     d = open(folder+"/list.txt","a")
-    url_path = string[13:-1]
-    p = re.compile("/[a-zA-Z0-9\\:\\.\\+\\-\\=\\_\\@\\%\\(\\)\\[\\]\\{\\}\\,\\!\\'\\’\\\\\\~é]+")
-    ftype = p.findall(url_path)
+    url_path = string[17:-16]
+    #Determine file type
+    #p = re.compile("/[a-zA-Z0-9\\:\\.\\+\\-\\=\\_\\@\\%\\(\\)\\[\\]\\{\\}\\,\\!\\'\\’\\\\\\~é]+")
+    #ftype = p.findall(url_path)
     #print ftype
-    fname = folder+"/"+str(i)+"_"+ftype[-1][1:]
+    #fname = folder+"/"+str(i)+"_"+ftype[-1][1:]
+    ftype = ".jpg" #default file type is jpg
+    fname = folder+"/"+str(i)+ftype
     try:
         req = urllib2.Request(url_path, headers=hdr)
         page = urllib2.urlopen(req)
