@@ -2,7 +2,7 @@
 
 A project (for educational purposes) on computer vision for face detection.
 
-###To detect faces:
+### To detect faces:
 
 Save images to a folder called *images* and run:
 
@@ -11,7 +11,7 @@ python detect_faces.py -i images/*
 ```
 The faces are saved in the folder *faces*.
 
-####Optional arguments
+#### Optional arguments
 
 To select a specific faceclassifier, use:
 
@@ -19,7 +19,7 @@ To select a specific faceclassifier, use:
 python detect_faces.py -f cascades/haarcascade_frontalface_alt.xml -i images/*
 ```
 
-###To save images from web search:
+### To save images from web search:
 
 To save the first 100 images, run:
 
@@ -35,7 +35,7 @@ python detect_faces.py -f cascades/haarcascade_frontalface_alt.xml -i images/Bra
 
 The faces are saved in the folder *faces/BradPitt*.
 
-####Optional arguments
+#### Optional arguments
 
 ```shell
 usage: image_search.py [-h] -q QUERY [-n NUM] [-d DOWNLOADDATA] [-c CONTINUEFROM]
