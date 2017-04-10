@@ -5,5 +5,5 @@ class FaceDetector:
         self.facecascade = cv2.CascadeClassifier(faceCascadePath)
     
     def detect(self,image,scaleFactor=1.1,minNeighbors=5,minSize=(30,30)):
-        rects = self.facecascade.detectMultiScale(image,scaleFactor=scaleFactor,minNeighbors=minNeighbors,minSize=minSize,flags=cv2.cv.CV_HAAR_SCALE_IMAGE)
+        rects = self.facecascade.detectMultiScale(image,scaleFactor=scaleFactor,minNeighbors=minNeighbors,minSize=minSize,flags=cv2.CASCADE_SCALE_IMAGE)
         return rects
