@@ -2,13 +2,16 @@
 
 A project (for educational purposes) on computer vision for face detection.
 
-### To detect faces:
+Note: The opencv code (which uses Haar cascades) has been moved to the folder opencvFrec
+
+### To detect faces using Haar cascades:
 
 Save images to a folder called *images* and run:
 
 ```shell
-python detect_faces.py -i images/*
+python opencvFrec/detect_faces.py -i images/*
 ```
+
 The faces are saved in the folder *faces*.
 
 #### Optional arguments
@@ -16,10 +19,10 @@ The faces are saved in the folder *faces*.
 To select a specific faceclassifier, use:
 
 ```shell
-python detect_faces.py -f cascades/haarcascade_frontalface_alt.xml -i images/*
+python opencvFrec/detect_faces.py -f opencvFrec/cascades/haarcascade_frontalface_alt.xml -i images/*
 ```
 
-### To save images from web search:
+### To save images from Bing search:
 
 To save the first 100 images, run:
 
