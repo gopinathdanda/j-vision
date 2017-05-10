@@ -54,10 +54,13 @@ while True:
             
             similarity = list(np.linalg.norm(encodings - face_encoding, axis=1))
             min_sim = min(similarity)
-            name = "Unknown"
+            if min_sim <= 0.65:
+                name = names[similarity.index(min_sim)]
+            else:
+                name = "Unknown"
             
             #name = ', '.join(list(compress(names,match)))
-            name = names[similarity.index(min_sim)]
+            
             #print match
             #print("{} : {}".format(name, min_sim))
             face_names.append(name)
