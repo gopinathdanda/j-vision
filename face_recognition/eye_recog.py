@@ -25,7 +25,7 @@ def get_eye_radius(eye):
     return math.hypot(p2[0]-p1[0], p2[1]-p1[1])*0.8
 
 def get_circle_points(center, radius, points=10):
-    return [(math.cos(2*math.pi/points*x)*radius+center[0],math.sin(2*math.pi/points*x)*radius+center[1]) for x in xrange(0,points+1)]
+    return [(math.cos(2*math.pi/points*x)*radius+center[0],math.sin(2*math.pi/points*x)*radius+center[1]) for x in range(0,points+1)]
 
 def get_eye_circ_coord(a):
     return get_circle_points(get_eye_center(a), get_eye_radius(a))

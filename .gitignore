@@ -5,3 +5,6 @@ faces/*
 data.txt
 test2.py
 pyimagesearch/*
+catsdogs/*
+tariq/mnist_train.csv
+tariq/mnist_test.csv
