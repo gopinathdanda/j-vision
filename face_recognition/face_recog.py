@@ -16,13 +16,13 @@ import numpy as np
 video_capture = cv2.VideoCapture(0)
 
 # Load a sample picture and learn how to recognize it.
-data_file = open("images/data_list.txt",'r')
+data_file = open("./images/data_list.txt",'r')
 data_list = data_file.read()
 encodings = []
 names = []
 for data_point in data_list.split("\n"):
     index, value = data_point.split(", ")
-    image = face_recognition.load_image_file("images/"+value)
+    image = face_recognition.load_image_file("./images/"+value)
     face_encoding = face_recognition.face_encodings(image)[0]
     
     encodings.append(face_encoding)
